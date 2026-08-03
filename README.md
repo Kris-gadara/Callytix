@@ -1,6 +1,6 @@
 # Callytix: AI-Based Fraud Phone Call Detection System
 
-Callytix is an AI-based final-year college project designed to detect fraudulent phone calls (such as bank impersonations, lottery scams, and OTP harvesting) from audio recordings. The system transcribes the call audio using OpenAI Whisper and classifies the text as **Fraudulent** or **Legitimate** using a Multinomial Naive Bayes classifier trained on a composite scam transcript dataset.
+Callytix is an AI-based project designed to detect fraudulent phone calls (such as bank impersonations, lottery scams, and OTP harvesting) from audio recordings. The system transcribes the call audio using OpenAI Whisper and classifies the text as **Fraudulent** or **Legitimate** using a Multinomial Naive Bayes classifier trained on a composite scam transcript dataset.
 
 ---
 
@@ -199,9 +199,7 @@ Here is the result screen showing the transcribed text, model classification pre
 
 ---
 
-## 📖 Viva Preparation Q&A
-
-Here are common questions asked during project viva exams:
+## Information
 
 1. **Why use Multinomial Naive Bayes instead of Deep Learning (like BERT)?**
    - Naive Bayes is extremely fast, highly efficient, and uses very little memory. It works exceptionally well for text classification when combined with TF-IDF, making it easy to run on standard computers without needing an expensive GPU. It serves as an excellent baseline and keeps the project code simple and easy to explain.
