@@ -5,7 +5,6 @@ pandas
 numpy<2.0.0
 joblib
 openai-whisper
-torch
 kagglehub
 jinja2
 python-multipart

@@ -8,3 +8,5 @@ services:
     envVars:
       - key: WEB_CONCURRENCY
         value: "1"
+      - key: WHISPER_MODEL
+        value: tiny

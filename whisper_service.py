@@ -23,21 +23,32 @@ _setup_ffmpeg_path()
 _model = None
 _model_lock = threading.Lock()
 _transcription_lock = threading.Lock()
+WHISPER_MODEL = os.environ.get("WHISPER_MODEL", "small").strip().lower()
+SUPPORTED_MODELS = {"tiny", "base", "small", "medium", "large", "turbo"}
+
+if WHISPER_MODEL not in SUPPORTED_MODELS:
+    raise ValueError(
+        f"Unsupported WHISPER_MODEL '{WHISPER_MODEL}'. "
+        f"Choose one of: {', '.join(sorted(SUPPORTED_MODELS))}."
+    )
 
 def get_whisper_model():
     """
-    Loads and returns the Whisper 'small' model.
+    Loads and returns the configured Whisper model.
     Caches the model to optimize prediction speed.
     """
     global _model
     with _model_lock:
         if _model is None:
-            print("Loading Whisper 'small' model (this may take a moment on first run)...")
+            print(
+                f"Loading Whisper '{WHISPER_MODEL}' model "
+                "(this may take a moment on first run)..."
+            )
             # Check if CUDA (GPU) is available, otherwise default to CPU
             device = "cuda" if torch.cuda.is_available() else "cpu"
             print(f"Whisper will run on device: {device}")
 
-            _model = whisper.load_model("small", device=device)
+            _model = whisper.load_model(WHISPER_MODEL, device=device)
             print("Whisper model loaded successfully!")
     return _model
 

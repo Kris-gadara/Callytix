@@ -166,13 +166,15 @@ http://127.0.0.1:8000/
 
 ### Render Deployment
 
-The repository includes a Render Blueprint (`render.yaml`), a Linux FFmpeg package list (`apt.txt`), and Render-specific requirements that install CPU-only PyTorch (`requirements-render.txt`) to avoid downloading CUDA libraries. Deploy the Blueprint from the repository root, or configure an existing Render web service with:
+The repository includes a Render Blueprint (`render.yaml`), a Linux FFmpeg package list (`apt.txt`), and Render-specific requirements that install CPU-only PyTorch (`requirements-render.txt`) to avoid downloading CUDA libraries. Render is configured to use the Whisper `tiny` model by default. Set `WHISPER_MODEL` in the Render environment to `base` or `small` if more transcription accuracy is needed and the instance has enough memory. The application reads this variable when loading the model.
+
+Deploy the Blueprint from the repository root, or configure an existing Render web service with:
 
 - **Build command:** `pip install -r requirements-render.txt`
 - **Start command:** `uvicorn app:app --host 0.0.0.0 --port $PORT`
 - **Health check path:** `/healthz`
 
-Use a paid instance with at least 4 GB of memory for the Whisper `small` model; the free instance is not suitable for reliable inference. The model is loaded on the first prediction request and may need to download its weights, so that first request can take longer. The health check verifies that the trained model files and FFmpeg are present. If a prediction still returns `502 Bad Gateway`, inspect the Render logs for memory exhaustion or a worker restart.
+The model is loaded on the first prediction request and may need to download its weights, so that first request can take longer. The health check verifies that the trained model files and FFmpeg are present. If a prediction still returns `502 Bad Gateway`, inspect the Render logs for memory exhaustion or a worker restart.
 
 ---
 
