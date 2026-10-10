@@ -164,6 +164,10 @@ http://127.0.0.1:8000/
 2. Click **"Analyze & Predict Call"**.
 3. View the transcript, the classification output (Fraudulent vs. Legitimate), the confidence score, and highlighted suspicious words.
 
+### Render Deployment
+
+The Whisper `small` model runs on CPU when no GPU is available and is loaded on the first prediction request. Use a Render web service instance with enough memory for PyTorch and Whisper inference. The first request may also take longer while Whisper downloads its model weights. If a prediction request returns `502 Bad Gateway`, check the Render service logs for a worker restart or memory-related failure.
+
 ---
 
 ## 🔧 Troubleshooting

@@ -1,13 +1,17 @@
 import os
 import shutil
+import logging
 from fastapi import FastAPI, Request, Form, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.concurrency import run_in_threadpool
 
 from train import train_model, MODEL_PATH, VECTORIZER_PATH
 from predict import predict_call
 from whisper_service import transcribe_audio
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Callytix - AI-Based Fraud Phone Call Detection System")
 
@@ -91,7 +95,7 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
             
         # 3. Transcribe audio using Whisper
         try:
-            transcript = transcribe_audio(temp_file_path)
+            transcript = await run_in_threadpool(transcribe_audio, temp_file_path)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Speech-to-text transcription failed: {str(e)}")
             
@@ -116,6 +120,7 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
         
     except Exception as e:
         # Render homepage with error message on exception
+        logger.exception("Prediction request failed")
         is_trained = os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH)
         return templates.TemplateResponse(
             request=request,
