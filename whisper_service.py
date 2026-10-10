@@ -1,6 +1,7 @@
 import whisper
 import torch
 import os
+import threading
 
 # Add winget FFmpeg paths dynamically to PATH environment variable
 # to ensure Whisper can locate ffmpeg without needing shell/machine restart.
@@ -20,6 +21,8 @@ _setup_ffmpeg_path()
 
 # Global variable to cache the whisper model so we don't reload it on every prediction
 _model = None
+_model_lock = threading.Lock()
+_transcription_lock = threading.Lock()
 
 def get_whisper_model():
     """
@@ -27,15 +30,15 @@ def get_whisper_model():
     Caches the model to optimize prediction speed.
     """
     global _model
-    if _model is None:
-        print("Loading Whisper 'small' model (this may take a moment on first run)...")
-        # Check if CUDA (GPU) is available, otherwise default to CPU
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Whisper will run on device: {device}")
-        
-        # Load the small model
-        _model = whisper.load_model("small", device=device)
-        print("Whisper model loaded successfully!")
+    with _model_lock:
+        if _model is None:
+            print("Loading Whisper 'small' model (this may take a moment on first run)...")
+            # Check if CUDA (GPU) is available, otherwise default to CPU
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"Whisper will run on device: {device}")
+
+            _model = whisper.load_model("small", device=device)
+            print("Whisper model loaded successfully!")
     return _model
 
 def transcribe_audio(audio_path: str) -> str:
@@ -46,12 +49,12 @@ def transcribe_audio(audio_path: str) -> str:
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
         
-    model = get_whisper_model()
-    print(f"Transcribing audio file: {audio_path}...")
-    
-    # Transcribe audio file
-    result = model.transcribe(audio_path)
-    
-    transcription = result.get("text", "").strip()
-    print("Transcription complete!")
-    return transcription
+    with _transcription_lock:
+        model = get_whisper_model()
+        print(f"Transcribing audio file: {audio_path}...")
+
+        result = model.transcribe(audio_path)
+
+        transcription = result.get("text", "").strip()
+        print("Transcription complete!")
+        return transcription
