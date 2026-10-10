@@ -30,8 +30,9 @@ async def read_home(request: Request):
     """
     is_trained = os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH)
     return templates.TemplateResponse(
-        "index.html", 
-        {"request": request, "is_trained": is_trained}
+        request=request,
+        name="index.html",
+        context={"is_trained": is_trained}
     )
 
 @app.post("/train")
@@ -63,9 +64,9 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
     if not os.path.exists(MODEL_PATH) or not os.path.exists(VECTORIZER_PATH):
         # Render index page with error message
         return templates.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
+            request=request,
+            name="index.html",
+            context={
                 "is_trained": False,
                 "error": "The model has not been trained yet. Please train the model before predicting."
             }
@@ -74,9 +75,9 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
     # 2. Validate file uploaded
     if not audio_file.filename:
         return templates.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
+            request=request,
+            name="index.html",
+            context={
                 "is_trained": True,
                 "error": "No file was selected for upload."
             }
@@ -102,9 +103,9 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
             
         # 5. Render results page
         return templates.TemplateResponse(
-            "result.html",
-            {
-                "request": request,
+            request=request,
+            name="result.html",
+            context={
                 "filename": audio_file.filename,
                 "transcript": transcript if transcript else "[No speech detected in audio file]",
                 "prediction": prediction_result["prediction"],
@@ -117,9 +118,9 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
         # Render homepage with error message on exception
         is_trained = os.path.exists(MODEL_PATH) and os.path.exists(VECTORIZER_PATH)
         return templates.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
+            request=request,
+            name="index.html",
+            context={
                 "is_trained": is_trained,
                 "error": f"An error occurred: {str(e)}"
             }
