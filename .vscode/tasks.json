@@ -2,18 +2,15 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Run Callytix FastAPI app",
+			"label": "Run Callytix locally",
 			"type": "shell",
-			"command": "C:\\Users\\LENOVO GAMING\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+			"command": "${command:python.interpreterPath}",
 			"args": [
-				"-m",
-				"uvicorn",
-				"app:app",
-				"--host",
-				"127.0.0.1",
-				"--port",
-				"8000"
+				"app.py"
 			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
 			"isBackground": true,
 			"problemMatcher": []
 		}

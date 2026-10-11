@@ -1,8 +1,12 @@
-gradio==5.49.1
-spaces
+fastapi
+uvicorn
 scikit-learn==1.5.1
 pandas
 numpy<2.0.0
 joblib
 openai-whisper
+torch
+imageio-ffmpeg
 kagglehub
+jinja2
+python-multipart
