@@ -10,8 +10,8 @@ from kagglehub import KaggleDatasetAdapter
 
 from preprocess import clean_text
 
-# Paths for saving the model and vectorizer
-MODELS_DIR = "models"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_DIR = os.path.join(BASE_DIR, "models")
 MODEL_PATH = os.path.join(MODELS_DIR, "model.pkl")
 VECTORIZER_PATH = os.path.join(MODELS_DIR, "vectorizer.pkl")
 

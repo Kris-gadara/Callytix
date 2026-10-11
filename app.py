@@ -13,21 +13,20 @@ from predict import predict_call
 from whisper_service import transcribe_audio
 
 logger = logging.getLogger(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 app = FastAPI(title="Callytix - AI-Based Fraud Phone Call Detection System")
 MAX_AUDIO_BYTES = 100 * 1024 * 1024
 UPLOAD_CHUNK_BYTES = 1024 * 1024
 
-# Create necessary directories
-os.makedirs("uploads", exist_ok=True)
-os.makedirs("static", exist_ok=True)
-os.makedirs("templates", exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Mount static files (CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 # Set up templates
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 @app.get("/", response_class=HTMLResponse)
 async def read_home(request: Request):
@@ -111,7 +110,7 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
             )
 
         with tempfile.NamedTemporaryFile(
-            mode="wb", dir="uploads", suffix=suffix, delete=False
+            mode="wb", dir=UPLOAD_DIR, suffix=suffix, delete=False
         ) as temporary_file:
             temp_file_path = temporary_file.name
             total_bytes = 0
@@ -168,5 +167,5 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    # Run the server on port 8000
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+    port = int(os.environ.get("PORT", "8000"))
+    uvicorn.run(app, host="127.0.0.1", port=port)

@@ -114,12 +114,26 @@ The project automatically checks for a Windows package manager (`winget`) instal
 - **macOS**: `brew install ffmpeg`
 - **Linux**: `sudo apt install ffmpeg`
 
-### 2. Setup Workspace & Install Dependencies
+### 2. One-time Setup
 1. Clone or extract the project files to a local directory.
-2. Install the necessary packages. To prevent compatibility issues between precompiled PyTorch binaries and NumPy 2.x, the project pins `numpy<2.0.0`:
+2. Create and activate a virtual environment, then install the dependencies once. To prevent compatibility issues between precompiled PyTorch binaries and NumPy 2.x, the project pins `numpy<2.0.0`:
    ```bash
-   pip install -r requirements.txt
+   python -m venv .venv
    ```
+
+   On Windows PowerShell:
+   ```powershell
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install -r requirements-render.txt
+   ```
+
+   On macOS/Linux:
+   ```bash
+   source .venv/bin/activate
+   python -m pip install -r requirements-render.txt
+   ```
+
+   Keep the virtual environment activated in your project terminal. Dependencies only need to be installed again if you recreate `.venv` or change the requirements.
 
 ---
 
@@ -150,12 +164,8 @@ To start the FastAPI web server:
 ```bash
 python app.py
 ```
-Or use Uvicorn directly:
-```bash
-uvicorn app:app --reload
-```
 
-Once started, open your web browser and navigate to:
+The app listens on port `8000` by default. To use a different port, set `PORT` before starting it (for example, `$env:PORT=8080` in PowerShell). Once started, open:
 ```
 http://127.0.0.1:8000/
 ```
