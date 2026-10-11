@@ -2,6 +2,7 @@ import whisper
 import torch
 import os
 import threading
+import spaces
 
 # Add winget FFmpeg paths dynamically to PATH environment variable
 # to ensure Whisper can locate ffmpeg without needing shell/machine restart.
@@ -23,7 +24,7 @@ _setup_ffmpeg_path()
 _model = None
 _model_lock = threading.Lock()
 _transcription_lock = threading.Lock()
-WHISPER_MODEL = os.environ.get("WHISPER_MODEL", "small").strip().lower()
+WHISPER_MODEL = os.environ.get("WHISPER_MODEL", "tiny").strip().lower()
 SUPPORTED_MODELS = {"tiny", "base", "small", "medium", "large", "turbo"}
 
 if WHISPER_MODEL not in SUPPORTED_MODELS:
@@ -31,6 +32,11 @@ if WHISPER_MODEL not in SUPPORTED_MODELS:
         f"Unsupported WHISPER_MODEL '{WHISPER_MODEL}'. "
         f"Choose one of: {', '.join(sorted(SUPPORTED_MODELS))}."
     )
+
+if torch.cuda.is_available():
+    print(f"Loading Whisper '{WHISPER_MODEL}' model onto CUDA...")
+    _model = whisper.load_model(WHISPER_MODEL, device="cuda")
+
 
 def get_whisper_model():
     """
@@ -52,6 +58,7 @@ def get_whisper_model():
             print("Whisper model loaded successfully!")
     return _model
 
+@spaces.GPU(duration=180)
 def transcribe_audio(audio_path: str) -> str:
     """
     Transcribes the audio file at the given path using Whisper.

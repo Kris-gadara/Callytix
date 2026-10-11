@@ -1,15 +1,43 @@
+---
+title: Callytix Fraud Call Detection
+emoji: 📞
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+sdk_version: "5.49.1"
+python_version: "3.12.12"
+app_file: app.py
+pinned: false
+---
+
 # Callytix: AI-Based Fraud Phone Call Detection System
 
 Callytix is an AI-based project designed to detect fraudulent phone calls (such as bank impersonations, lottery scams, and OTP harvesting) from audio recordings. The system transcribes the call audio using OpenAI Whisper and classifies the text as **Fraudulent** or **Legitimate** using a Multinomial Naive Bayes classifier trained on a composite scam transcript dataset.
+
+## Hugging Face Spaces
+
+This repository is configured for the Gradio SDK. To use ZeroGPU for speech
+transcription, select **ZeroGPU** in the Space's hardware settings. ZeroGPU
+hosting eligibility and daily GPU quotas are controlled by Hugging Face; this
+repository configuration does not grant access to that hardware.
+
+The Space uses the included `models/model.pkl` and `models/vectorizer.pkl`
+artifacts. If they are missing, train from the **Train classifier** tab. A
+training run saves files only to the current Space runtime; commit the updated
+model artifacts to the repository if they need to remain available after a
+restart. Whisper uses the `tiny` model by default to limit the first model
+download and runtime use. Set `WHISPER_MODEL` in Space variables to choose a
+larger supported model. `packages.txt` installs FFmpeg, which Whisper requires
+to decode audio.
 
 ---
 
 ## 🚀 Features
 
-- **Speech-to-Text Transcription**: Automatically transcribes uploaded audio files (`.wav`, `.mp3`, `.m4a`, etc.) using the OpenAI Whisper `small` model.
+- **Speech-to-Text Transcription**: Automatically transcribes uploaded audio files (`.wav`, `.mp3`, `.m4a`, etc.) using the OpenAI Whisper `tiny` model by default.
 - **Machine Learning Classification**: Predicts whether the transcribed text is Fraudulent or Legitimate using TF-IDF vectorization and a Multinomial Naive Bayes model.
 - **Confidence Scoring**: Computes and displays the model's confidence percentage for the prediction.
-- **Explainable Highlights**: Scans the transcript for key suspicious phrases (like `OTP`, `KYC`, `Bank`, `Customs`) and highlights them on the dashboard to assist in explanation.
+- **Explainable Highlights**: Shows suspicious terms (like `OTP`, `KYC`, `Bank`, `Customs`) found in the transcript. These terms do not decide the classification.
 - **On-Demand Training**: Allows training and evaluating the model directly from the web interface, displaying validation metrics (Accuracy, Precision, Recall, F1 Score) and a Confusion Matrix.
 - **College-Focused Architecture**: Structured, clean, and beginner-friendly codebase containing no databases, complex microservices, or external API costs.
 
@@ -35,7 +63,7 @@ The project uses the **Composite Scam Transcript Dataset** hosted on Kaggle (`ib
                                 v
                       +-------------------+
                       |   OpenAI Whisper  |
-                      |   (small model)   |
+                      |   (tiny model)    |
                       +---------+---------+
                                 | (Transcript Text)
                                 v
@@ -70,27 +98,26 @@ The project uses the **Composite Scam Transcript Dataset** hosted on Kaggle (`ib
 ```text
 Callytix/
 │
-├── app.py                  # FastAPI Backend & Web Server
+├── app.py                  # Gradio interface and Space entry point
 ├── train.py                # Machine Learning Training Pipeline
 ├── predict.py              # ML Prediction & Suspicious Keyword Extraction
 ├── whisper_service.py      # Speech-to-Text via OpenAI Whisper
 ├── preprocess.py           # Text Preprocessing & Stopword Removal
-├── requirements.txt        # Python Packages List
+├── requirements.txt        # Gradio Space Python dependencies
+├── packages.txt            # System packages required by Hugging Face Spaces
 ├── README.md               # Project Documentation
 │
 ├── models/
 │   ├── model.pkl           # Saved Naive Bayes Model weights
 │   └── vectorizer.pkl      # Saved TF-IDF Vectorizer weights
 │
-├── uploads/                # Temporary Audio Upload storage (auto-cleaned)
-│
 ├── templates/
-│   ├── index.html          # Web Frontend Dashboard
-│   └── result.html         # Analysis Results Page
+│   ├── index.html          # Earlier HTML interface (not used by Gradio)
+│   └── result.html         # Earlier results template (not used by Gradio)
 │
 └── static/
-    ├── style.css           # Modern Custom CSS stylesheet
-    └── script.js           # AJAX Training and Drag-and-Drop Handler
+    ├── style.css           # Earlier interface styles (not used by Gradio)
+    └── script.js           # Earlier interface behavior (not used by Gradio)
 ```
 
 ---
@@ -98,7 +125,7 @@ Callytix/
 ## 🛠️ Installation & Setup
 
 ### 1. Prerequisites
-Ensure you have **Python 3.9+** and **pip** installed.
+Ensure you have **Python 3.10+** and **pip** installed.
 Additionally, OpenAI Whisper requires **FFmpeg** to process and decode audio files.
 
 #### Windows FFmpeg Setup (Automated via winget)
@@ -153,26 +180,26 @@ This will:
 4. Print the final metrics (Accuracy, Precision, Recall, F1 Score) and Confusion Matrix.
 5. Save the trained outputs inside the `models/` directory.
 
-### Option B: Web Dashboard
-Start the web app, and click the **"Train Model Now"** button on the page.
+### Option B: Gradio interface
+Start the web app and click **"Train model"** in the **Train classifier** tab.
 
 ---
 
 ## 🖥️ Running the Application
 
-To start the FastAPI web server:
+To start the Gradio web interface:
 ```bash
 python app.py
 ```
 
-The app listens on port `8000` by default. To use a different port, set `PORT` before starting it (for example, `$env:PORT=8080` in PowerShell). Once started, open:
+The app listens on port `7860` by default. To use a different port, set `PORT` before starting it. Once started, open:
 ```
-http://127.0.0.1:8000/
+http://127.0.0.1:7860/
 ```
 
 1. Select or drag a call audio recording (wav/mp3) into the uploader.
-2. Click **"Analyze & Predict Call"**.
-3. View the transcript, the classification output (Fraudulent vs. Legitimate), the confidence score, and highlighted suspicious words.
+2. Click **"Transcribe and analyze"**.
+3. View the transcript, the classification output (Fraudulent vs. Legitimate), the confidence score, and any suspicious keywords.
 
 ### Render Deployment
 
@@ -181,10 +208,10 @@ The repository includes a Render Blueprint (`render.yaml`), a Linux FFmpeg packa
 Deploy the Blueprint from the repository root, or configure an existing Render web service with:
 
 - **Build command:** `pip install -r requirements-render.txt`
-- **Start command:** `uvicorn app:app --host 0.0.0.0 --port $PORT`
-- **Health check path:** `/healthz`
+- **Start command:** `python app.py`
+- **Health check path:** `/`
 
-The model is loaded on the first prediction request and may need to download its weights, so that first request can take longer. The health check verifies that the trained model files and FFmpeg are present. If a prediction still returns `502 Bad Gateway`, inspect the Render logs for memory exhaustion or a worker restart.
+The Whisper model may need to download its weights at startup, so the first startup or prediction can take longer. If a prediction returns `502 Bad Gateway`, inspect the Render logs for memory exhaustion or a worker restart.
 
 ---
 
@@ -234,8 +261,8 @@ Here is the result screen showing the transcribed text, model classification pre
 3. **What is the Naive Bayes assumption?**
    - It assumes that the presence of a particular feature (word) in a class is completely independent of the presence of any other feature. Although this assumption is "naive" and rarely holds true in natural language, Naive Bayes classifiers still perform remarkably well in practice.
 
-4. **Why use Whisper small model?**
-   - The `small` model offers the best balance between transcription accuracy and computational speed on consumer hardware. It consumes about 2GB of VRAM and runs efficiently on CPU as a fallback.
+4. **Why use Whisper tiny model by default?**
+   - The `tiny` model reduces initial download time and resource use for free hosting. Larger supported models can be selected with the `WHISPER_MODEL` environment variable if the available hardware and quota permit.
 
 ---
 

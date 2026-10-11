@@ -3,8 +3,8 @@ services:
     name: callytix
     runtime: python
     buildCommand: pip install -r requirements-render.txt
-    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /healthz
+    startCommand: python app.py
+    healthCheckPath: /
     envVars:
       - key: WEB_CONCURRENCY
         value: "1"
