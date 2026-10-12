@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f5f7ff">
     <title>Callytix | Call scam analysis</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=20261012-2">
 </head>
 <body class="home-page">
     <header>
@@ -28,8 +28,19 @@
             <h1>Know what’s really<br>on the <span>other end.</span></h1>
             <p>Upload a phone call recording to get a transcript and an AI-assisted scam risk prediction.</p>
             <div class="hero-trust">
-                <span><span class="trust-icon">◈</span> Processed locally</span>
-                <span><span class="trust-icon">↗</span> WAV · MP3 · M4A · FLAC</span>
+                <span>
+                    <svg class="trust-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M10 2.5 16.5 5v4.7c0 3.7-2.7 6.2-6.5 7.8-3.8-1.6-6.5-4.1-6.5-7.8V5L10 2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                        <path d="m7.2 9.8 1.8 1.8 3.8-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Processed locally
+                </span>
+                <span>
+                    <svg class="trust-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M3.5 14.5 14 4m0 0H7.5M14 4v6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    WAV · MP3 · M4A · FLAC
+                </span>
             </div>
         </section>
 
@@ -44,7 +55,11 @@
                     <h2 class="card-title">Analyze a phone call</h2>
                     <p class="upload-intro">Your recording is transcribed with Whisper, then checked by the saved scam-detection model.</p>
                 </div>
-                <div class="audio-mark" aria-hidden="true">♫</div>
+                <div class="audio-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M9 18V5l12-2v13M9 18c0 1.7-1.6 3-3.5 3S2 20.7 2 19s1.6-3 3.5-3S9 16.3 9 18Zm12-2c0 1.7-1.6 3-3.5 3S14 17.7 14 16s1.6-3 3.5-3 3.5 1.3 3.5 3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
             </div>
 
             {% if is_trained %}
@@ -62,13 +77,20 @@
                 </label>
 
                 <div class="selected-file-info" id="file-info-container" aria-live="polite">
-                    <span class="file-type-icon" aria-hidden="true">♫</span>
+                    <span class="file-type-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18V5l12-2v13M9 18c0 1.7-1.6 3-3.5 3S2 20.7 2 19s1.6-3 3.5-3S9 16.3 9 18Zm12-2c0 1.7-1.6 3-3.5 3S14 17.7 14 16s1.6-3 3.5-3 3.5 1.3 3.5 3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
                     <span id="selected-file-name">audio-file.mp3</span>
                     <button type="button" id="remove-file-btn" class="remove-file-btn" aria-label="Remove selected audio file">&times;</button>
                 </div>
 
                 <button type="submit" id="predict-btn" class="btn btn-primary">
-                    Analyze call <span aria-hidden="true">→</span>
+                    Analyze call
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M3.5 10h12m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </button>
             </form>
             {% else %}
@@ -85,7 +107,9 @@
             </div>
 
             <div class="privacy-note">
-                <span aria-hidden="true">⌑</span>
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M10 2.5 16.5 5v4.7c0 3.7-2.7 6.2-6.5 7.8-3.8-1.6-6.5-4.1-6.5-7.8V5L10 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
                 <span>Recordings are temporarily stored for analysis and removed when processing finishes.</span>
             </div>
         </section>

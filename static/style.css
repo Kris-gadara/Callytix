@@ -29,6 +29,13 @@
     padding: 0;
 }
 
+svg {
+    display: block;
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     background-color: var(--background);
@@ -546,8 +553,11 @@ footer {
 }
 
 .trust-icon {
+    display: block;
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
     color: #6272d6;
-    font-size: 1.05rem;
 }
 
 .home-page .upload-card {
@@ -595,7 +605,12 @@ footer {
     background: #f0f2ff;
     border: 1px solid #e0e4ff;
     border-radius: 14px;
-    font-size: 1.65rem;
+}
+
+.audio-mark svg {
+    display: block;
+    width: 23px;
+    height: 23px;
 }
 
 .home-page .upload-zone {
@@ -686,6 +701,12 @@ footer {
     border-radius: 10px;
 }
 
+.file-type-icon svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+
 #selected-file-name {
     flex: 1;
     min-width: 0;
@@ -722,6 +743,12 @@ footer {
     box-shadow: 0 8px 18px rgb(77 93 195 / 0.2);
 }
 
+.home-page .btn-primary svg {
+    display: block;
+    width: 19px;
+    height: 19px;
+}
+
 .home-page .btn-primary:hover:not(:disabled) {
     background: linear-gradient(100deg, #4f60ca, #3747a8);
     box-shadow: 0 10px 22px rgb(77 93 195 / 0.27);
@@ -739,9 +766,12 @@ footer {
     text-align: center;
 }
 
-.privacy-note > span:first-child {
+.privacy-note svg {
+    display: block;
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
     color: #6373cf;
-    font-size: 1.1rem;
 }
 
 .model-unavailable {
@@ -835,6 +865,139 @@ footer {
     font-size: 0.75rem;
 }
 
+.result-page main {
+    max-width: 900px;
+    margin-top: 2.5rem;
+}
+
+.result-page .card {
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.result-page .card-title {
+    align-items: center;
+    line-height: 1.35;
+}
+
+.result-heading-copy {
+    min-width: 0;
+}
+
+.result-heading-copy h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.2;
+}
+
+.result-heading-copy p {
+    margin-top: 0.35rem;
+    color: var(--text-secondary);
+}
+
+.result-icon {
+    display: block;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    color: #5969c8;
+}
+
+.result-badge svg {
+    display: block;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.confidence-label {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.confidence-value {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.confidence-value.fraud {
+    color: var(--danger);
+}
+
+.confidence-value.legit {
+    color: var(--success);
+}
+
+.confidence-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.result-note {
+    margin-top: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.keyword-note {
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.no-keywords {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    color: var(--success);
+    font-weight: 600;
+}
+
+.keyword-chip svg {
+    display: block;
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.result-page .card > p svg {
+    display: block;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.transcript-box {
+    overflow-wrap: anywhere;
+    padding: 1.25rem;
+    color: var(--text-primary);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.result-file-name {
+    overflow-wrap: anywhere;
+}
+
+.result-actions {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.result-actions .btn {
+    max-width: 250px;
+    text-decoration: none;
+}
+
 @media (max-width: 600px) {
     .home-page header {
         padding: 0.8rem 1rem;
@@ -846,6 +1009,21 @@ footer {
     }
 
     .home-page .status-badge {
+        padding: 0.32rem 0.6rem;
+        font-size: 0.7rem;
+    }
+
+    .result-page header {
+        padding: 0.8rem 1rem;
+    }
+
+    .result-page .header-container {
+        flex-direction: row;
+        gap: 0.5rem;
+        text-align: left;
+    }
+
+    .result-page .status-badge {
         padding: 0.32rem 0.6rem;
         font-size: 0.7rem;
     }
@@ -891,5 +1069,94 @@ footer {
     .step-divider {
         width: 100%;
         height: 1px;
+    }
+
+    .result-page main {
+        margin-top: 1.5rem;
+        padding: 0 1rem;
+    }
+
+    .result-page .result-header {
+        gap: 0.8rem;
+    }
+
+    .result-page .result-header > div:last-child {
+        max-width: 100%;
+    }
+
+    .result-page .result-badge {
+        width: auto;
+        max-width: 100%;
+        font-size: 1.05rem;
+        padding: 0.45rem 0.9rem;
+    }
+
+    .result-page .confidence-label {
+        font-size: 0.9rem;
+    }
+
+    .result-page .confidence-value {
+        font-size: 1.65rem;
+    }
+
+    .result-page .confidence-row {
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .transcript-box {
+        padding: 1rem;
+        font-size: 0.92rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .home-page header,
+    .result-page header {
+        padding-right: 0.75rem;
+        padding-left: 0.75rem;
+    }
+
+    .home-page .logo,
+    .result-page .logo {
+        gap: 0.5rem;
+        font-size: 1.25rem;
+    }
+
+    .home-page .logo-icon,
+    .result-page .logo-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+    }
+
+    .home-page .status-badge,
+    .result-page .status-badge {
+        flex-shrink: 0;
+        gap: 0.35rem;
+        padding: 0.3rem 0.45rem;
+        font-size: 0.62rem;
+        white-space: nowrap;
+    }
+
+    .home-page .status-dot,
+    .result-page .status-dot {
+        flex: 0 0 7px;
+        width: 7px;
+        height: 7px;
+    }
+
+    .home-page .upload-card-heading {
+        gap: 0.6rem;
+    }
+
+    .home-page .card-title {
+        font-size: 1.25rem;
+    }
+
+    .audio-mark {
+        flex-basis: 38px;
+        height: 38px;
+        border-radius: 12px;
     }
 }

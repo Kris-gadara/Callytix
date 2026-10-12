@@ -23,6 +23,104 @@ vectorizer are loaded from `models/` and are used as-is.
 | Model serialization | Joblib (`model.pkl` and `vectorizer.pkl`) |
 | Optional model training | pandas, scikit-learn, and KaggleHub |
 
+## Model and machine-learning method
+
+This is a **supervised binary text-classification** project. It does not
+classify raw audio directly: Whisper first converts speech into transcript
+text, and the text model classifies that transcript.
+
+- **Dataset:** the Kaggle Composite Scam Transcript Dataset, file
+  `composite_train.csv`, loaded by `train.py`. The expected columns are `text`
+  and `label`.
+- **Labels:** `0` represents legitimate and `1` represents fraudulent/scam,
+  as assumed by `predict.py`.
+- **Preprocessing:** `preprocess.py` lowercases text, removes digits,
+  punctuation and other non-English-letter characters, splits into words, and
+  removes its built-in English stopword list.
+- **Text features:** scikit-learn `TfidfVectorizer(max_features=5000)` learns
+  up to 5,000 unigram (single-word) features from the training subset. TF-IDF
+  gives higher weight to terms that are informative within a document and
+  less common across the corpus.
+- **Classifier:** scikit-learn `MultinomialNB` learns class-specific word
+  statistics from the sparse TF-IDF vectors. Its default additive smoothing
+  parameter is `alpha=1.0`.
+- **Saved artifacts:** `models/vectorizer.pkl` and `models/model.pkl` are a
+  matched pair. The running app loads these artifacts and performs inference;
+  it does not fit or update them.
+
+The checked-in model artifact currently reports 5,000 features and was fitted
+with 29,385 training examples: 12,770 label-0 examples and 16,615 label-1
+examples. These are model artifact metadata, not a claim about the evaluation
+score. Training metrics are printed when `train.py` is run and are not
+currently persisted as a report.
+
+The percentage returned by `predict_proba` is the model's estimated class
+probability; it is not a separately calibrated real-world risk score.
+Multinomial Naive Bayes with unigram TF-IDF does not understand word order,
+sarcasm, or conversational context, and transcription mistakes can affect the
+result. A transcript with no usable words currently falls back to
+`Legitimate` at 50%; this should be treated as **unable to assess**, not as
+evidence that the call is safe.
+
+## Training, test split, and examples
+
+When a maintainer runs `python train.py`, the training process:
+
+1. Downloads/loads `composite_train.csv` from KaggleHub.
+2. Drops rows with missing text or labels; cleans each transcript; drops
+   transcripts that become empty; converts labels to integers.
+3. Splits the cleaned labeled data with
+   `train_test_split(test_size=0.2, random_state=42, stratify=y)`.
+   This creates an 80% training subset and a held-out 20% test subset.
+   `stratify=y` keeps the class proportions approximately consistent in both
+   subsets, and the fixed seed makes the split repeatable for the same input
+   data.
+4. Fits the TF-IDF vocabulary and weights on **training text only**; uses that
+   fitted vectorizer to transform both the training and held-out test text.
+5. Fits Multinomial Naive Bayes on the training vectors and labels.
+6. Predicts the held-out test labels and prints accuracy, precision, recall,
+   F1 score, and a confusion matrix.
+7. Saves the fitted classifier and vectorizer into `models/`.
+
+Illustrative rows (examples only; they are not quoted rows from the Kaggle
+dataset):
+
+| Transcript text | Example label |
+| --- | --- |
+| “Your appointment is confirmed for Thursday at three.” | `0` — legitimate |
+| “Share your bank OTP now to stop your account from being blocked.” | `1` — scam |
+
+After preprocessing, words such as `your`, `is`, `for`, and `at` are removed,
+and numbers and punctuation are discarded. The remaining text is transformed
+using the vocabulary learned from the training subset. During evaluation, the
+test subset is not used to fit the vocabulary or classifier; it is used only
+to measure how the fitted pipeline predicts unseen rows from that split.
+
+As a separate inference demonstration, the current saved artifacts classify
+the first example above as **Legitimate (62.55%)**. They classify “Share your
+bank OTP now to stop your account from being blocked” as **Fraudulent
+(85.00%)**, with `OTP`, `Bank`, and `Account` highlighted. These are example
+predictions on manually supplied sentences, not test-set metrics or quotes
+from the dataset.
+
+The evaluation metrics treat class `1` (scam) as the positive class:
+
+- **Accuracy:** correct predictions divided by all predictions.
+- **Precision:** of calls predicted as scams, the fraction that are labeled
+  scams (`TP / (TP + FP)`).
+- **Recall:** of the labeled scams, the fraction detected (`TP / (TP + FN)`).
+- **F1:** the harmonic mean of precision and recall; useful when both missed
+  scams and false alarms matter.
+- **Confusion matrix:** counts true negatives, false positives, false
+  negatives, and true positives. The code uses scikit-learn's label order
+  `[0, 1]`, so rows are actual labels and columns are predicted labels.
+
+For example, a **hypothetical** test result with `TP=80`, `FP=20`, `FN=10`,
+and `TN=90` would have 85% accuracy, 80% precision, about 88.9% recall, and
+about 84.2% F1. This only demonstrates the metric calculations; it is not a
+reported Callytix model result. For a project evaluation, run the training
+script and record the actual output with the dataset version used.
+
 ## End-to-end flow
 
 1. **Start the local server.** `app.py` starts FastAPI and serves the home page,
