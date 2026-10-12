@@ -9,7 +9,6 @@ from fastapi.templating import Jinja2Templates
 from starlette.concurrency import run_in_threadpool
 
 from predict import MODEL_PATH, VECTORIZER_PATH, predict_call
-from train import train_model
 from whisper_service import is_ffmpeg_available, transcribe_audio
 
 logger = logging.getLogger(__name__)
@@ -54,23 +53,6 @@ async def health_check():
     return {"status": "ok"}
 
 
-@app.post("/train")
-async def handle_train():
-    try:
-        metrics = await run_in_threadpool(train_model)
-        return {
-            "success": True,
-            "message": "Model trained successfully!",
-            "metrics": metrics,
-        }
-    except Exception as exc:
-        logger.exception("Model training failed")
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "message": f"Training failed: {exc}"},
-        )
-
-
 @app.post("/predict", response_class=HTMLResponse)
 async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
     if not os.path.exists(MODEL_PATH) or not os.path.exists(VECTORIZER_PATH):
@@ -79,7 +61,7 @@ async def handle_predict(request: Request, audio_file: UploadFile = File(...)):
             name="index.html",
             context={
                 "is_trained": False,
-                "error": "The model has not been trained yet. Please train the model before predicting.",
+                "error": "The trained model files are unavailable. Prediction cannot be started.",
             },
             status_code=503,
         )

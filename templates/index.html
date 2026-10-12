@@ -3,156 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Callytix - AI-Based Fraud Phone Call Detection System</title>
+    <meta name="theme-color" content="#f5f7ff">
+    <title>Callytix | Call scam analysis</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body class="home-page">
     <header>
         <div class="header-container">
-            <a href="/" class="logo">
+            <a href="/" class="logo" aria-label="Callytix home">
                 <span class="logo-icon">C</span>
                 Callytix
             </a>
-            
-            <div id="model-status-badge" class="status-badge {{ 'trained' if is_trained else 'untrained' }}">
+
+            <div class="status-badge {{ 'trained' if is_trained else 'untrained' }}" aria-live="polite">
                 <span class="status-dot"></span>
-                <span id="model-status-text">{{ 'Model Trained' if is_trained else 'Model Untrained' }}</span>
+                <span>{{ 'Detection model ready' if is_trained else 'Detection model unavailable' }}</span>
             </div>
         </div>
     </header>
 
     <main>
-        <!-- Hero section explaining project objective -->
         <section class="hero">
-            <h1>AI-Based Fraud Phone Call Detection System</h1>
-            <p>A final-year project designed to detect telecommunication and bank-impersonation scams using speech transcription and Machine Learning.</p>
+            <span class="hero-eyebrow"><span class="hero-eyebrow-dot"></span> AI-powered call safety</span>
+            <h1>Know what’s really<br>on the <span>other end.</span></h1>
+            <p>Upload a phone call recording to get a transcript and an AI-assisted scam risk prediction.</p>
+            <div class="hero-trust">
+                <span><span class="trust-icon">◈</span> Processed locally</span>
+                <span><span class="trust-icon">↗</span> WAV · MP3 · M4A · FLAC</span>
+            </div>
         </section>
 
         {% if error %}
-        <div class="error-banner">
-            {{ error }}
-        </div>
+        <div class="error-banner" role="alert">{{ error }}</div>
         {% endif %}
 
-        <!-- Audio Upload Card -->
-        <section class="card" id="upload-card">
-            <h2 class="card-title">
-                <span>📞</span> Analyze Phone Call Audio
-            </h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                Upload a recording of a phone call. The system will transcribe the call using OpenAI Whisper, pre-process the text, and classify it using the Naive Bayes model.
-            </p>
+        <section class="card upload-card" id="upload-card">
+            <div class="upload-card-heading">
+                <div>
+                    <span class="section-kicker">CALL CHECK</span>
+                    <h2 class="card-title">Analyze a phone call</h2>
+                    <p class="upload-intro">Your recording is transcribed with Whisper, then checked by the saved scam-detection model.</p>
+                </div>
+                <div class="audio-mark" aria-hidden="true">♫</div>
+            </div>
 
+            {% if is_trained %}
             <form id="prediction-form" action="/predict" method="POST" enctype="multipart/form-data">
-                <div class="upload-zone" id="drop-zone">
-                    <span class="upload-icon">🎵</span>
-                    <p class="upload-text">Drag and drop audio file here or click to browse</p>
-                    <p class="upload-subtext">Supports WAV, MP3, M4A, or FLAC</p>
-                    <input type="file" name="audio_file" id="file-input" accept="audio/*" required>
+                <label class="upload-zone" id="drop-zone" for="file-input">
+                    <span class="upload-symbol" aria-hidden="true">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <path d="M24 31V9m0 0-8 8m8-8 8 8M10 29v8a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="upload-text">Drop your audio recording here</span>
+                    <span class="upload-subtext">or <span class="browse-link">browse files</span> on your device</span>
+                    <span class="upload-limit">Maximum file size: 100 MB</span>
+                    <input type="file" name="audio_file" id="file-input" accept=".wav,.mp3,.m4a,.flac,audio/wav,audio/mpeg,audio/mp4,audio/flac" required>
+                </label>
+
+                <div class="selected-file-info" id="file-info-container" aria-live="polite">
+                    <span class="file-type-icon" aria-hidden="true">♫</span>
+                    <span id="selected-file-name">audio-file.mp3</span>
+                    <button type="button" id="remove-file-btn" class="remove-file-btn" aria-label="Remove selected audio file">&times;</button>
                 </div>
 
-                <div class="selected-file-info" id="file-info-container">
-                    <span id="selected-file-name" style="font-weight: 500;">filename.mp3</span>
-                    <span id="remove-file-btn" style="color: var(--danger); cursor: pointer; font-size: 1.2rem;">&times;</span>
-                </div>
-
-                <div class="mt-6">
-                    <button type="submit" id="predict-btn" class="btn btn-primary" {{ 'disabled' if not is_trained }}>
-                        Analyze & Predict call
-                    </button>
-                </div>
+                <button type="submit" id="predict-btn" class="btn btn-primary">
+                    Analyze call <span aria-hidden="true">→</span>
+                </button>
             </form>
+            {% else %}
+            <div class="model-unavailable" role="status">
+                <strong>The saved detection model isn’t available.</strong>
+                <span>Audio analysis is paused until the model files are restored.</span>
+            </div>
+            {% endif %}
 
-            <!-- Loading Spinner for transcription/prediction -->
-            <div class="loader-container" id="prediction-loader">
+            <div class="loader-container" id="prediction-loader" aria-live="polite">
                 <div class="spinner"></div>
-                <div class="loading-text">Transcribing audio and analyzing call content...</div>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
-                    (Using local Whisper 'small' model. This may take 10-30 seconds depending on file duration and hardware)
-                </p>
+                <div class="loading-text">Transcribing and analyzing your call…</div>
+                <p class="loading-note">Whisper runs locally. First-time setup or longer recordings may take a little longer.</p>
+            </div>
+
+            <div class="privacy-note">
+                <span aria-hidden="true">⌑</span>
+                <span>Recordings are temporarily stored for analysis and removed when processing finishes.</span>
             </div>
         </section>
 
-        <!-- Model Management/Training Card -->
-        <section class="card">
-            <h2 class="card-title">
-                <span>⚙️</span> Machine Learning Model
-            </h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                Train a Multinomial Naive Bayes classifier on the Kaggle Composite Scam Transcript Dataset.
-            </p>
-
-            <div id="training-actions">
-                <button type="button" id="train-btn" class="btn btn-secondary">
-                    Train Model Now
-                </button>
+        <section class="steps-strip" aria-label="How call analysis works">
+            <div class="step-item">
+                <span class="step-number">01</span>
+                <span><strong>Upload</strong><small>Choose a call recording</small></span>
             </div>
-
-            <!-- Loading Spinner for training -->
-            <div class="loader-container" id="training-loader">
-                <div class="spinner"></div>
-                <div class="loading-text">Downloading Kaggle dataset & training Multinomial Naive Bayes...</div>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
-                    (This happens once. The dataset will be cached locally)
-                </p>
+            <span class="step-divider" aria-hidden="true"></span>
+            <div class="step-item">
+                <span class="step-number">02</span>
+                <span><strong>Transcribe</strong><small>Speech becomes text</small></span>
             </div>
-
-            <!-- Metrics details (filled in dynamically after training) -->
-            <div id="metrics-container" style="display: none; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 2rem;">
-                <h3 style="font-weight: 700; margin-bottom: 1rem;">Model Evaluation Metrics</h3>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                    These scores are calculated using the 20% validation split from the Kaggle scam transcript dataset:
-                </p>
-                
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-value" id="metric-accuracy">0.00%</div>
-                        <div class="metric-label">Accuracy</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="metric-precision">0.00%</div>
-                        <div class="metric-label">Precision</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="metric-recall">0.00%</div>
-                        <div class="metric-label">Recall</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="metric-f1">0.00%</div>
-                        <div class="metric-label">F1 Score</div>
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <h4 style="font-weight: 600; margin-bottom: 0.5rem;">Confusion Matrix</h4>
-                    <table class="confusion-matrix-table">
-                        <thead>
-                            <tr>
-                                <th>Actual / Predicted</th>
-                                <th>Predicted Legitimate (0)</th>
-                                <th>Predicted Fraudulent (1)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th>Actual Legitimate (0)</th>
-                                <td id="cm-0-0">-</td>
-                                <td id="cm-0-1">-</td>
-                            </tr>
-                            <tr>
-                                <th>Actual Fraudulent (1)</th>
-                                <td id="cm-1-0">-</td>
-                                <td id="cm-1-1">-</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <span class="step-divider" aria-hidden="true"></span>
+            <div class="step-item">
+                <span class="step-number">03</span>
+                <span><strong>Review</strong><small>See risk and transcript</small></span>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2026 Callytix - AI-Based Fraud Phone Call Detection System | College Final-Year Project</p>
+        <p>Callytix <span>·</span> AI-assisted phone scam detection</p>
+        <p class="footer-disclaimer">Predictions are informational and should not replace your own judgment.</p>
     </footer>
 
     <script src="/static/script.js"></script>

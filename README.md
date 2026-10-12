@@ -1,16 +1,60 @@
 # Callytix: AI-Based Fraud Phone Call Detection
 
-Callytix analyzes an uploaded phone-call recording locally. OpenAI Whisper
-transcribes the audio, then a saved TF-IDF vectorizer and Multinomial Naive
-Bayes classifier predict whether the transcript appears fraudulent or
-legitimate. The result page also shows confidence and suspicious keywords;
-keywords are informational and do not determine the prediction.
+Callytix is a local web application for reviewing potentially fraudulent phone
+calls. A user uploads a call recording, the app transcribes it with OpenAI
+Whisper, and a saved text-classification pipeline predicts whether the
+transcript resembles a fraudulent or legitimate call. The result includes the
+transcript, model confidence, and matching suspicious keywords.
+
+The web interface is inference-only: users can upload audio and view a
+prediction. It does not expose model training. The trained model and fitted
+vectorizer are loaded from `models/` and are used as-is.
+
+## Technology
+
+| Area | Technology |
+| --- | --- |
+| Web application and HTTP routes | Python, FastAPI, Uvicorn |
+| HTML rendering | Jinja2 templates |
+| Front end | HTML, CSS, and browser JavaScript |
+| Audio transcription | OpenAI Whisper (`small` model), PyTorch |
+| Audio decoding | FFmpeg, with `imageio-ffmpeg` as a bundled fallback |
+| Text classification | scikit-learn TF-IDF vectorizer and Multinomial Naive Bayes |
+| Model serialization | Joblib (`model.pkl` and `vectorizer.pkl`) |
+| Optional model training | pandas, scikit-learn, and KaggleHub |
+
+## End-to-end flow
+
+1. **Start the local server.** `app.py` starts FastAPI and serves the home page,
+   static assets, and the health endpoint.
+2. **Check model readiness.** The home page checks for both saved model
+   artifacts. When they are present, it shows the audio upload form.
+3. **Upload a recording.** The user selects or drops a WAV, MP3, M4A, or FLAC
+   file. The server validates its extension and enforces a 100 MB upload limit.
+4. **Transcribe the audio.** `whisper_service.py` makes FFmpeg available,
+   loads and caches Whisper locally, and converts speech to transcript text.
+5. **Classify the transcript.** `predict.py` cleans the text with
+   `preprocess.py`, transforms it with the saved TF-IDF vectorizer, and asks the
+   saved Multinomial Naive Bayes model for a class and probability.
+6. **Show the result.** The result page displays the prediction, confidence,
+   transcript, and any matching suspicious keywords. Keywords are explanatory
+   only; they do not determine the model's prediction.
+7. **Clean up the upload.** The temporary audio file is removed after the
+   request completes, including when analysis returns an error.
+
+The classifier output is informational, not a guarantee that a call is safe or
+fraudulent. Review the transcript and use independent judgment.
 
 ## Requirements
 
 - Python 3.10 or newer
-- The Python dependencies in `requirements.txt`; `imageio-ffmpeg` supplies
-  Whisper's FFmpeg executable, so a separate system FFmpeg install is optional.
+- Dependencies listed in `requirements.txt`
+- The included trained files: `models/model.pkl` and
+  `models/vectorizer.pkl`
+
+Whisper downloads its `small` model the first time it transcribes audio. The
+model is cached locally for later runs. `imageio-ffmpeg` supplies FFmpeg when a
+system FFmpeg executable is not installed.
 
 ## Install and run on Windows
 
@@ -24,17 +68,10 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
-Open <http://127.0.0.1:8000>. After the one-time setup, start the app in a new
-terminal with:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-python app.py
-```
-
-If PowerShell blocks virtual-environment activation, use
-`.\.venv\Scripts\python.exe -m pip install -r requirements.txt` to install and
-`.\.venv\Scripts\python.exe app.py` to run without activating it.
+Open <http://127.0.0.1:8000>. To start the app later, activate the environment
+and run `python app.py` again. If PowerShell blocks activation, use
+`.\.venv\Scripts\python.exe -m pip install -r requirements.txt` and
+`.\.venv\Scripts\python.exe app.py`.
 
 ## Install and run on macOS or Linux
 
@@ -50,40 +87,39 @@ python app.py
 
 Then open <http://127.0.0.1:8000>.
 
-## Using Callytix
+## Routes
 
-1. Open the local app and upload a WAV, MP3, M4A, or FLAC recording.
-2. Submit the form to transcribe the call and display its classification.
-3. The included `models/model.pkl` and `models/vectorizer.pkl` are used for
-   predictions; they do not need to be retrained for normal use.
-4. Use **Train Model Now** or run `python train.py` to download the public
-   Kaggle transcript dataset, retrain the classifier, and save updated model
-   files under `models/`.
+- `GET /` — prediction-only audio upload page, with model readiness status.
+- `POST /predict` — accepts an audio upload and renders the analysis result.
+- `GET /healthz` — returns service readiness, including model files and FFmpeg.
 
-Whisper downloads its `small` model the first time it transcribes audio. Later
-runs use the locally cached model. Uploaded files are temporary and removed
-after analysis.
+## Optional maintainer model training
+
+Training is not available from the web app. A maintainer can run
+`python train.py` separately to download the Composite Scam Transcript Dataset
+through KaggleHub, clean and split the labeled transcripts, fit a TF-IDF
+vectorizer and Multinomial Naive Bayes classifier, evaluate the model, and
+replace the files in `models/`. The web app uses those saved artifacts only;
+training dependencies are not required by the prediction request flow.
 
 ## Project structure
 
 ```text
 Callytix/
-├── app.py                  # Local FastAPI entry point (127.0.0.1:8000)
-├── predict.py              # Loads model artifacts and classifies transcripts
-├── preprocess.py           # Text cleaning and stopword removal
-├── train.py                # Kaggle dataset training and evaluation pipeline
-├── whisper_service.py      # Local Whisper model loading and transcription
+├── app.py                  # FastAPI server, upload validation, and prediction route
+├── predict.py              # Loads saved assets and classifies transcripts
+├── preprocess.py           # Text normalization and stopword removal
+├── whisper_service.py      # Local Whisper transcription and FFmpeg setup
+├── train.py                # Optional, standalone model training utility
 ├── requirements.txt        # Python dependencies
-├── README.md               # Local setup and usage
 ├── models/
 │   ├── model.pkl           # Trained Naive Bayes classifier
 │   └── vectorizer.pkl      # Fitted TF-IDF vectorizer
 ├── templates/
-│   ├── index.html          # Audio upload and training interface
-│   └── result.html         # Prediction results
+│   ├── index.html          # Prediction-only audio upload page
+│   └── result.html         # Prediction report and transcript
 ├── static/
-│   ├── script.js           # Upload and training interface behavior
-│   └── style.css           # Local interface styles
-├── uploads/                # Temporary audio uploads during analysis
-└── demo_testing.png        # Project screenshot
+│   ├── script.js           # Upload, drag-and-drop, and loading behavior
+│   └── style.css           # Responsive page and result styling
+└── uploads/                # Temporary analysis uploads; removed after processing
 ```
